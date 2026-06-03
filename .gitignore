@@ -1,0 +1,11 @@
+/build/
+/.cmake/
+
+.vs/
+.vscode/
+*.sln
+*.vcxproj
+*.xcodeproj
+DerivedData/
+.DS_Store
+Thumbs.db
