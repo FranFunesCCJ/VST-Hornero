@@ -17,6 +17,7 @@ juce_add_plugin(VST Hornero
     IS_MidiEffect FALSE
     FORMATS VST3 AU               # Formatos que va a generar (VST3 para Windows/Mac, AU para Mac)
     PRODUCT_NAME "Hornero Reverb"
+    
 )
 
 target_sources(VST Hornero PRIVATE
@@ -33,4 +34,5 @@ target_link_libraries(VST Hornero PRIVATE
     juce::juce_recommended_config_flags
     juce::juce_recommended_lto_flags
     juce::juce_recommended_warning_flags
+    juce::juce_dsp
 )

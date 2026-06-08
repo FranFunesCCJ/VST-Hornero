@@ -1,6 +1,7 @@
 #pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
+#include <juce_dsp/juce_dsp.h>
 
 //==============================================================================
 class AudioPluginAudioProcessor final : public juce::AudioProcessor
@@ -24,7 +25,7 @@ public:
     bool hasEditor() const override;
 
     //==============================================================================
-    const juce::String getName() const override;
+    const juce::String getName() const override {return "VST Hornero";}
 
     bool acceptsMidi() const override;
     bool producesMidi() const override;
@@ -44,5 +45,9 @@ public:
 
 private:
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)
+    juce::dsp::Convolution ReverbHornero; 
+    juce::dsp::ProcessSpec spec;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)  //Prohibe que plugin se duplique por error en la memoria y que si cargo un .wav de un IR se libere y no quede flotando consumiendo ram
+    
+
 };

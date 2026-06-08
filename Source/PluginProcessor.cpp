@@ -12,6 +12,7 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
                      #endif
                        )
 {
+    ReverbHornero.reset();     //Resetea al iniciar plugin
 }
 
 AudioPluginAudioProcessor::~AudioPluginAudioProcessor()
@@ -21,7 +22,7 @@ AudioPluginAudioProcessor::~AudioPluginAudioProcessor()
 //==============================================================================
 const juce::String AudioPluginAudioProcessor::getName() const
 {
-    return JucePlugin_Name;
+    return  "VST Hornero";
 }
 
 bool AudioPluginAudioProcessor::acceptsMidi() const
@@ -53,7 +54,7 @@ bool AudioPluginAudioProcessor::isMidiEffect() const
 
 double AudioPluginAudioProcessor::getTailLengthSeconds() const
 {
-    return 0.0;
+    return 4.0;      //Deja sonar al reverb por 4 segundos
 }
 
 int AudioPluginAudioProcessor::getNumPrograms()
@@ -88,6 +89,34 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+    spec.sampleRate = sampleRate;
+    spec.maximumBlockSize = uint32_t (samplesPerBlock);
+    spec.numChannels = uint32_t (getTotalNumOutputChannels());
+
+    ReverbHornero.prepare (spec);
+
+    juce::File archivoImpulso ("E:\IR\Lare Long Echo Hall.wav")
+
+    //Chequeo de que archivo exista antes de cargar y que se crashee todo
+    if (archivoImpulso.existsAsFile())
+    {
+        ReverbHornero.loadImpulseResponse (
+            archivoImpulso,
+            juce::dsp::Convolution::Stereo::yes,
+            juce::dsp::Convolution::Trim::yes,
+            0,
+            juce::dsp::Convolution::Normalise::yes
+        );
+    }
+
+    else
+    {
+        juce::Logger:writeToLog ("No se encontró el IR en la ruta especificada.")
+    }
+
+
+
+    
     juce::ignoreUnused (sampleRate, samplesPerBlock);
 }
 
@@ -145,12 +174,9 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     // the samples and the outer loop is handling the channels.
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
-        juce::ignoreUnused (channelData);
-        // ..do something to the data...
-    }
+    juce::dsp::AudioBlock<float> block (buffer);                            //Envuelvo buffer de audio en un "AudioBlock"
+    juce::dsp::ProcessContextReplacing<float> context (block);              //"Context" es decir el contexto jaja, entra audio limpio y sale con reverb en el mismo lugar
+    ReverbHornero.process (context);                                               //Pasamos el contexto al objeto Reverb
 }
 
 //==============================================================================
