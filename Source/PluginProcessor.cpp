@@ -20,7 +20,7 @@ AudioPluginAudioProcessor::~AudioPluginAudioProcessor()
 }
 
 //==============================================================================
-const juce::String AudioPluginAudioProcessor::getName() const
+const juce::String AudioPluginAudioProcessor::getName() const 
 {
     return  "VST Hornero";
 }
@@ -95,7 +95,7 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
 
     ReverbHornero.prepare (spec);
 
-    juce::File archivoImpulso ("E:\IR\Lare Long Echo Hall.wav")
+    juce::File archivoImpulso ("E:/VST HORNERO/IR/Lare Long Echo Hall.wav");
 
     //Chequeo de que archivo exista antes de cargar y que se crashee todo
     if (archivoImpulso.existsAsFile())
@@ -111,7 +111,7 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
 
     else
     {
-        juce::Logger:writeToLog ("No se encontró el IR en la ruta especificada.")
+        juce::Logger::writeToLog ("No se encontró el IR en la ruta especificada.");
     }
 
 

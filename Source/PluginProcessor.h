@@ -25,7 +25,7 @@ public:
     bool hasEditor() const override;
 
     //==============================================================================
-    const juce::String getName() const override {return "VST Hornero";}
+    const juce::String getName() const override;
 
     bool acceptsMidi() const override;
     bool producesMidi() const override;
