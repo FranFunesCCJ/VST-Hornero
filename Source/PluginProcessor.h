@@ -47,6 +47,10 @@ private:
     //==============================================================================
     juce::dsp::Convolution ReverbHornero; 
     juce::dsp::ProcessSpec spec;
+    juce::dsp::StateVariableFilter::Filter<float>  filtroBright; //Filtro pasa bajos   (Chequear suavizado con filtro IIR, smooth value)
+    juce::AudioProcessorValueTreeState apvts;    //Parametros APVTS
+    juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();     //Crear layout de las perillas
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)  //Prohibe que plugin se duplique por error en la memoria y que si cargo un .wav de un IR se libere y no quede flotando consumiendo ram
     
 

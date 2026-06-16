@@ -93,9 +93,12 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     spec.maximumBlockSize = uint32_t (samplesPerBlock);
     spec.numChannels = uint32_t (getTotalNumOutputChannels());
 
+    filtroBright.prepare (spec);
+    filtroBright.parameters->type = juce::dsp::StateVariableFilter::Parameters<float>::Type::lowPass;
+
     ReverbHornero.prepare (spec);
 
-    juce::File archivoImpulso ("E:/VST HORNERO/IR/Lare Long Echo Hall.wav");
+    juce::File archivoImpulso ("E:/VST Hornero/IR/In The Silo.wav");
 
     //Chequeo de que archivo exista antes de cargar y que se crashee todo
     if (archivoImpulso.existsAsFile())
@@ -168,15 +171,43 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
+
+
+    juce::AudioBuffer<float> dryBuffer;                   //Clonar el buffer para tener el DRY
+    dryBuffer.makeCopyOf (buffer);
+
+    juce::dsp::AudioBlock<float> block { buffer };                           //Procesar la Reberb WET /Envuelvo buffer de audio en un "AudioBlock"
+    juce::dsp::ProcessContextReplacing<float> context (block);      //"Context" es decir el contexto jaja, entra audio limpio y sale con reverb en el mismo lugar
+    ReverbHornero.process (context);                                         //Pasamos el contexto al objeto Reverb
+
+    float valorBright = apvts.getRawParameterValue ("bright")->load();              //Usando SVF para filtro pasa bajos 
+    filtroBright.parameters->setCutOffFrequency (spec.sampleRate, valorBright);
+
+    filtroBright.parameters->Q = 0.707f; //Ajustar la resonancia (Q) si querés que tenga un color específico (1.0f / sqrt(2) es plano)
+
+    filtroBright.process (context);
+
+    float valorMix = apvts.getRawParameterValue ("mix")->load() / 100.0f; 
+    float dryGain = 1.0f - valorMix;
+    float wetGain = valorMix;
+
+    for (int channel = 0; channel < totalNumInputChannels; ++channel)
+    {
+        auto* wetData = buffer.getWritePointer (channel);
+        auto* dryData = dryBuffer.getReadPointer (channel);
+
+        for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
+        {
+            wetData[sample] = (dryData[sample] * dryGain) + (wetData[sample] * wetGain);
+        }
+    }
     // This is the place where you'd normally do the guts of your plugin's
     // audio processing...
     // Make sure to reset the state if your inner loop is processing
     // the samples and the outer loop is handling the channels.
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
-    juce::dsp::AudioBlock<float> block (buffer);                            //Envuelvo buffer de audio en un "AudioBlock"
-    juce::dsp::ProcessContextReplacing<float> context (block);              //"Context" es decir el contexto jaja, entra audio limpio y sale con reverb en el mismo lugar
-    ReverbHornero.process (context);                                               //Pasamos el contexto al objeto Reverb
+    
 }
 
 //==============================================================================
